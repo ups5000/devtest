@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Carbon\Carbon;
-use App\Models\User_test;
+use App\User;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\UserBirthDayUpdateRequest;
 
@@ -30,14 +30,17 @@ class HomeController extends Controller
         $data = [];
         $date = $request->input('birthdate');
         if( !isset($date)){
-            //If not post request date
-            $date = User_test::get_birth(Auth::user()->id);
+            //If not post request date            
+            $user = User::find(Auth::user()->id);
+            $date = $user->birth_date;
         }
 					      
         if( isset($date) && $date != ''){
             $date = Carbon::parse($date .' 23:59:00');
             //if the key exists Sent to DB
-            User_test::update_birth(Auth::user()->id, $date->format('Y/m/d') );
+            $user = User::find(Auth::user()->id);
+            $user->birth_date = $date->format('Y/m/d');
+            $user->save();            
             //Calculate days
             $data['days_to_bday'] = $this->getDaysToBirthDay($date);
 			$data['date'] = $date->format('Y/m/d');
