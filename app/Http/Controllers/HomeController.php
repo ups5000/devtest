@@ -35,33 +35,30 @@ class HomeController extends Controller
         }
 					      
         if( isset($date) && $date != ''){
-            $date = Carbon::parse($date)->format('Y/m/d');
+            $date = Carbon::parse($date .' 23:59:00');
             //if the key exists Sent to DB
-            User_test::update_birth(Auth::user()->id, $date);
+            User_test::update_birth(Auth::user()->id, $date->format('Y/m/d') );
             //Calculate days
             $data['days_to_bday'] = $this->getDaysToBirthDay($date);
-			$data['date'] = $date;
+			$data['date'] = $date->format('Y/m/d');
         }
-//$data['date'] = User_test::get_birth(Auth::user()->id);
         return view('home',$data);
     }
 
-    protected  function getDaysToBirthDay($date){
-        $diffDays = '';
-        //Calc days to bday
-		$b_day = Carbon::parse($date);
+    protected  function getDaysToBirthDay($birthday){
+        $diffDays = '';        
         //reset year to count only days
-		$b_day->year(date('Y'));
-		$diffDays =  Carbon::now()->diffInDays($b_day,false);
+		$birthday->year(date('Y'));
+		$diffDays =  Carbon::now()->diffInDays($birthday,false);        
 		//BirthDay is over, calc next
-		if( $diffDays <= 1 ){
+		if( $diffDays <-1 ){
 			//Calc today to end year
 			$today_endyear =  Carbon::now()->diffInDays(date('Y').'-12-31',false);
 			//Calc 01/01
 			$nextBirth = Carbon::parse( (date('Y')).'-01-01')->addYear(1);
-			$b_day->year(date('Y')+1);
+			$birthday->year(date('Y')+1);
 			//Calc days to birthDay in next year and add the values
-			$nextBirth = $nextBirth->diffInDays($b_day,false);
+			$nextBirth = $nextBirth->diffInDays($birthday,false);
 			//Result
 			$diffDays = $today_endyear + $nextBirth;
 		}        		
